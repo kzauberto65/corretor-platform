@@ -1,0 +1,9 @@
+[2026-01-15 00:13:26] Iniciando ingestão do arquivo: data/entrada/teste_com_erros.xlsx
+[2026-01-15 00:13:27] Total de linhas na planilha: 6
+[2026-01-15 00:13:27] Linha 1 processada com sucesso
+[2026-01-15 00:13:27] Linha 2 processada com sucesso
+[2026-01-15 00:13:27] Linha 3 processada com sucesso
+[2026-01-15 00:13:27] Erro na linha 4: 'float' object has no attribute 'strip'
+[2026-01-15 00:13:27] Linha 5 processada com sucesso
+[2026-01-15 00:13:27] Linha 6 processada com sucesso
+[2026-01-15 00:13:27] Ingestão concluída com 1 erro(s)

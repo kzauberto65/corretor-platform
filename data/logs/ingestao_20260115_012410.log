@@ -1,0 +1,9 @@
+[2026-01-15 01:24:10] Iniciando ingestão do arquivo: data/entrada\teste.xlsx
+[2026-01-15 01:24:11] Total de linhas na planilha: 6
+[2026-01-15 01:24:11] Erro na linha 1: 'UnidadeReferenciaRepository' object has no attribute 'fetchone'
+[2026-01-15 01:24:11] Erro na linha 2: 'UnidadeReferenciaRepository' object has no attribute 'fetchone'
+[2026-01-15 01:24:11] Erro na linha 3: 'UnidadeReferenciaRepository' object has no attribute 'fetchone'
+[2026-01-15 01:24:11] Erro na linha 4: 'UnidadeReferenciaRepository' object has no attribute 'fetchone'
+[2026-01-15 01:24:11] Erro na linha 5: 'UnidadeReferenciaRepository' object has no attribute 'fetchone'
+[2026-01-15 01:24:11] Erro na linha 6: 'UnidadeReferenciaRepository' object has no attribute 'fetchone'
+[2026-01-15 01:24:11] Ingestão concluída com 6 erro(s)
