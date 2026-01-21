@@ -1,3 +1,4 @@
+# arquivo: corretor_imobiliaria_service.py
 from src.persistencia.repositorios.corretor_imobiliaria_repository import CorretorImobiliariaRepository
 
 class CorretorImobiliariaService:
@@ -8,14 +9,16 @@ class CorretorImobiliariaService:
         if not corretor_id or not imobiliaria_id:
             raise ValueError("IDs de corretor e imobiliária são obrigatórios")
 
-        # Evitar duplicidade
-        existentes = self.repo.listar_por_corretor(corretor_id)
-        for rel in existentes:
-            if rel["imobiliaria_id"] == imobiliaria_id:
-                return rel  # já existe
+        # Evitar duplicidade usando método específico
+        existente = self.repo.buscar_vinculo(corretor_id, imobiliaria_id)
+        if existente:
+            return existente
 
+        # Criar vínculo
         self.repo.criar(corretor_id, imobiliaria_id)
-        return self.repo.listar()[-1]
+
+        # Retornar o vínculo recém-criado
+        return self.repo.buscar_vinculo(corretor_id, imobiliaria_id)
 
     def listar(self):
         return self.repo.listar()
@@ -25,3 +28,13 @@ class CorretorImobiliariaService:
 
     def listar_por_imobiliaria(self, imobiliaria_id):
         return self.repo.listar_por_imobiliaria(imobiliaria_id)
+
+    def desvincular(self, corretor_id, imobiliaria_id):
+        # Verificar se o vínculo existe
+        existente = self.repo.buscar_vinculo(corretor_id, imobiliaria_id)
+        if not existente:
+            raise ValueError("Vínculo entre corretor e imobiliária não encontrado")
+
+        # Remover vínculo
+        self.repo.remover(corretor_id, imobiliaria_id)
+        return True

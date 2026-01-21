@@ -1,3 +1,4 @@
+# arquivo: construtora_imobiliaria_service.py
 from src.persistencia.repositorios.construtora_imobiliaria_repository import ConstrutoraImobiliariaRepository
 
 class ConstrutoraImobiliariaService:
@@ -8,14 +9,16 @@ class ConstrutoraImobiliariaService:
         if not construtora_id or not imobiliaria_id:
             raise ValueError("IDs de construtora e imobiliária são obrigatórios")
 
-        # Evitar duplicidade
-        existentes = self.repo.listar_por_construtora(construtora_id)
-        for rel in existentes:
-            if rel["imobiliaria_id"] == imobiliaria_id:
-                return rel  # já existe
+        # Evitar duplicidade usando método específico
+        existente = self.repo.buscar_vinculo(construtora_id, imobiliaria_id)
+        if existente:
+            return existente
 
+        # Criar vínculo
         self.repo.criar(construtora_id, imobiliaria_id)
-        return self.repo.listar()[-1]
+
+        # Retornar o vínculo recém-criado
+        return self.repo.buscar_vinculo(construtora_id, imobiliaria_id)
 
     def listar(self):
         return self.repo.listar()
@@ -25,3 +28,13 @@ class ConstrutoraImobiliariaService:
 
     def listar_por_imobiliaria(self, imobiliaria_id):
         return self.repo.listar_por_imobiliaria(imobiliaria_id)
+
+    def desvincular(self, construtora_id, imobiliaria_id):
+        # Verificar se o vínculo existe
+        existente = self.repo.buscar_vinculo(construtora_id, imobiliaria_id)
+        if not existente:
+            raise ValueError("Vínculo entre construtora e imobiliária não encontrado")
+
+        # Remover vínculo
+        self.repo.remover(construtora_id, imobiliaria_id)
+        return True
