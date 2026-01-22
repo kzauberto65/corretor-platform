@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.pyc
+
+# Banco local
+database/*.db
+database/*Copia*
+
+# Dados processados
+data/processado/
+
+# Arquivos temporários
+*.zip
+*.txt
+
+# Sistema
+.DS_Store
+Thumbs.db
