@@ -1,7 +1,7 @@
-# src/ingestao/normalizador.py
-
 import re
 from datetime import datetime
+import unicodedata
+
 
 class Normalizador:
 
@@ -43,7 +43,6 @@ class Normalizador:
         if not v:
             return None
 
-        # Trata formatos tipo "24,69" ou "24.69"
         v = v.replace(",", ".")
         try:
             return float(v)
@@ -59,9 +58,8 @@ class Normalizador:
         if not v:
             return None
 
-        # Remove símbolos e formatações
         v = v.replace("R$", "").replace(" ", "")
-        v = v.replace(".", "").replace(",", ".")  # 650.000,00 → 650000.00
+        v = v.replace(".", "").replace(",", ".")
 
         try:
             return float(v)
@@ -90,7 +88,6 @@ class Normalizador:
             except:
                 pass
 
-        # Se não reconheceu, retorna texto original
         return v
 
     # -------------------------
@@ -108,3 +105,22 @@ class Normalizador:
         if not v:
             return None
         return re.sub(r"\D", "", v)
+
+    # -------------------------
+    # CONSULTAS / BUSCA
+    # -------------------------
+
+    def texto_busca(self, valor):
+        """
+        Normaliza texto para consultas:
+        - remove acentos
+        - converte para minúsculas
+        - remove espaços extras
+        """
+        v = self.texto(valor)
+        if not v:
+            return None
+
+        v = unicodedata.normalize("NFD", v)
+        v = "".join(c for c in v if unicodedata.category(c) != "Mn")
+        return v.lower()

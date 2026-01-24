@@ -1,6 +1,10 @@
 import argparse
+import os
+import csv
+from datetime import datetime
+from openpyxl import Workbook
 
-from src.servicos.empreendimento_service import EmpreendimentoService
+from src.application.buscar_empreendimentos import BuscarEmpreendimentos
 from src.servicos.query_service import QueryService
 
 
@@ -20,7 +24,7 @@ def imprimir_tabela(empreendimentos):
     for e in empreendimentos:
         print("{:<4} {:<28} {:<12} {:<15} {:<15} {:<18} {:<15} {:<15} {:>10}".format(
             e["id"],
-            e["nome"][:26],
+            (e["nome"] or "")[:26],
             e["regiao"] or "",
             e["cidade"] or "",
             e["bairro"] or "",
@@ -31,65 +35,145 @@ def imprimir_tabela(empreendimentos):
         ))
 
 
-def listar():
-    service = EmpreendimentoService()
-    empreendimentos = service.listar_empreendimentos()
-    imprimir_tabela(empreendimentos)
+def escolher_ordenacao():
+    print("\nOrdenação (opcional):")
+    print("1 - Preço")
+    print("2 - Cidade")
+    print("3 - Nome")
+    print("4 - Lançamento")
+    print("5 - Região")
+    print("ENTER - Sem ordenação")
+
+    escolha = input("Escolha: ").strip()
+
+    if escolha == "":
+        return None  # ENTER = sem ordenação
+
+    mapa = {
+        "1": "preco",
+        "2": "cidade",
+        "3": "nome",
+        "4": "lancamento",
+        "5": "regiao"
+    }
+
+    return mapa.get(escolha)
 
 
-def buscar_por_id(empreendimento_id):
-    service = EmpreendimentoService()
-    emp = service.buscar_por_id(empreendimento_id)
+def exportar_xlsx(todos):
+    # Caminho absoluto para /data/exports/
+    base_dir = os.path.join(os.path.dirname(__file__), "..", "..", "data", "exports")
+    base_dir = os.path.abspath(base_dir)
 
-    if not emp:
-        print("Empreendimento não encontrado.")
-        return
+    os.makedirs(base_dir, exist_ok=True)
 
-    imprimir_tabela([emp])
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    caminho = os.path.join(base_dir, f"consulta_completa_{timestamp}.xlsx")
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Empreendimentos"
+
+    ws.append([
+        "ID", "Nome", "Região", "Cidade", "Bairro",
+        "Tipologia", "Lançamento", "Status", "Preço"
+    ])
+
+    for e in todos:
+        ws.append([
+            e["id"],
+            e["nome"],
+            e["regiao"],
+            e["cidade"],
+            e["bairro"],
+            e["tipologia"],
+            e["periodo_lancamento"],
+            e["status_entrega"],
+            e["preco"]
+        ])
+
+    wb.save(caminho)
+    print(f"\nArquivo XLSX gerado com sucesso em:\n{caminho}")
 
 
 def main():
     parser = argparse.ArgumentParser(description="CLI de consulta de empreendimentos")
 
-    parser.add_argument("--listar", action="store_true", help="Listar todos os empreendimentos")
-    parser.add_argument("--id", type=int, help="Buscar empreendimento por ID")
+    parser.add_argument("--listar", action="store_true")
 
-    parser.add_argument("--cidade", type=str, help="Filtrar por cidade")
-    parser.add_argument("--regiao", type=str, help="Filtrar por região")
-    parser.add_argument("--tipologia", type=str, help="Filtrar por tipologia")
-    parser.add_argument("--lancamento", type=str, help="Filtrar por período de lançamento")
-    parser.add_argument("--status", type=str, help="Filtrar por status de entrega")
-    parser.add_argument("--preco-min", type=float, help="Preço mínimo")
-    parser.add_argument("--preco-max", type=float, help="Preço máximo")
+    parser.add_argument("--cidade")
+    parser.add_argument("--regiao")
+    parser.add_argument("--tipologia")
+    parser.add_argument("--lancamento")
+    parser.add_argument("--status")
+    parser.add_argument("--preco-min", type=float)
+    parser.add_argument("--preco-max", type=float)
+
+    parser.add_argument("--pagina", type=int, default=1)
+    parser.add_argument("--por-pagina", type=int, default=3)
+
+    parser.add_argument("--ordenar-por")
+    parser.add_argument("--ordem", choices=["asc", "desc"], default="asc")
+
     args = parser.parse_args()
 
-    if args.listar:
-        listar()
-        return
+    filtros = {
+        "cidade": args.cidade,
+        "regiao": args.regiao,
+        "tipologia": args.tipologia,
+        "lancamento": args.lancamento,
+        "status": args.status,
+        "preco_min": args.preco_min,
+        "preco_max": args.preco_max,
+    }
 
-    if args.id:
-        buscar_por_id(args.id)
-        return
+    # Se o menu enviou --ordenar-por (mesmo vazio), NÃO perguntar de novo
+    if args.ordenar_por is not None:
+        ordenar_por = args.ordenar_por or None
+    else:
+        ordenar_por = escolher_ordenacao()
 
-    if (
-        args.cidade or args.regiao or args.tipologia or
-        args.lancamento or args.status or
-        args.preco_min or args.preco_max
-    ):
-        qs = QueryService()
-        resultados = qs.buscar_empreendimentos(
-            cidade=args.cidade,
-            regiao=args.regiao,
-            tipologia=args.tipologia,
-            periodo_lancamento=args.lancamento,
-            status=args.status,
-            preco_min=args.preco_min,
-            preco_max=args.preco_max
+    use_case = BuscarEmpreendimentos(QueryService())
+    pagina = args.pagina
+
+    while True:
+        print("\nExecutando consulta...\n")
+
+        resultado = use_case.executar(
+            filtros=filtros,
+            pagina=pagina,
+            por_pagina=args.por_pagina,
+            ordenar_por=ordenar_por,
+            ordem=args.ordem
         )
-        imprimir_tabela(resultados)
-        return
 
-    parser.print_help()
+        imprimir_tabela(resultado["dados"])
+        print(f"\nPágina {resultado['pagina']} de {resultado['total_paginas']}")
+
+        # Exportação XLSX de TODOS os resultados
+        exportar = input("\nExportar TODOS os resultados para XLSX? (s/N): ").strip().lower()
+
+        if exportar == "s":
+            print("\nGerando XLSX com todos os resultados...")
+
+            resultado_completo = use_case.executar(
+                filtros=filtros,
+                pagina=1,
+                por_pagina=999999,  # pega tudo
+                ordenar_por=ordenar_por,
+                ordem=args.ordem
+            )
+
+            exportar_xlsx(resultado_completo["dados"])
+
+        comando = input("\n[N] próxima | [P] anterior | ENTER sair: ").lower()
+
+        if comando == "n" and pagina < resultado["total_paginas"]:
+            pagina += 1
+        elif comando == "p" and pagina > 1:
+            pagina -= 1
+        else:
+            break
 
 
 if __name__ == "__main__":

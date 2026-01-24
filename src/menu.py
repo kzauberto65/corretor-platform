@@ -1,5 +1,6 @@
 import os
 import sys
+import subprocess
 
 
 def limpar_tela():
@@ -13,8 +14,13 @@ def rodar_ingestao():
 
 
 def listar_empreendimentos():
-    os.system("python -m src.cli.empreendimentos_cli --listar")
+    subprocess.run(["python", "-m", "src.cli.empreendimentos_cli", "--listar"])
     input("\nPressione ENTER para voltar ao menu...")
+
+
+def _executar_cli(args):
+    comando = ["python", "-m", "src.cli.empreendimentos_cli"] + args
+    subprocess.run(comando)
 
 
 def consultar():
@@ -23,25 +29,62 @@ def consultar():
     tipologia = input("Tipologia (ENTER para ignorar): ").strip()
     lancamento = input("Lançamento (ENTER para ignorar): ").strip()
     status = input("Status (ENTER para ignorar): ").strip()
+    preco_min = input("Preço mínimo (ENTER para ignorar): ").strip()
     preco_max = input("Preço máximo (ENTER para ignorar): ").strip()
 
-    comando = "python -m src.cli.empreendimentos_cli"
+    por_pagina_in = input("Resultados por página (ENTER = 3): ").strip()
+    por_pagina = int(por_pagina_in) if por_pagina_in.isdigit() else 3
+
+    print("\nOrdenação (opcional):")
+    print("1 - Preço")
+    print("2 - Cidade")
+    print("3 - Nome")
+    print("4 - Lançamento")
+    print("5 - Região")
+    print("ENTER - Sem ordenação")
+    ordenacao_opcao = input("Escolha: ").strip()
+
+    ordenar_por_map = {
+        "1": "preco",
+        "2": "cidade",
+        "3": "nome",
+        "4": "lancamento",
+        "5": "regiao",
+    }
+
+    ordenar_por = ordenar_por_map.get(ordenacao_opcao, "")
+
+    ordem = "asc"
+    if ordenar_por:
+        ordem_in = input("Ordem (asc/desc) [asc]: ").strip().lower()
+        if ordem_in in ("asc", "desc"):
+            ordem = ordem_in
+
+    args = []
 
     if cidade:
-        comando += f' --cidade "{cidade}"'
+        args += ["--cidade", cidade]
     if regiao:
-        comando += f' --regiao "{regiao}"'
+        args += ["--regiao", regiao]
     if tipologia:
-        comando += f' --tipologia "{tipologia}"'
+        args += ["--tipologia", tipologia]
     if lancamento:
-        comando += f' --lancamento "{lancamento}"'
+        args += ["--lancamento", lancamento]
     if status:
-        comando += f' --status "{status}"'
+        args += ["--status", status]
+    if preco_min:
+        args += ["--preco-min", preco_min]
     if preco_max:
-        comando += f' --preco-max {preco_max}'
+        args += ["--preco-max", preco_max]
 
-    print("\nExecutando consulta...\n")
-    os.system(comando)
+    # Sempre envia ordenar-por (mesmo vazio)
+    args += ["--ordenar-por", ordenar_por, "--ordem", ordem]
+
+    args += ["--listar", "--pagina", "1", "--por-pagina", str(por_pagina)]
+
+    # Não limpar a tela aqui — isso apagava o CLI
+    _executar_cli(args)
+
     input("\nPressione ENTER para voltar ao menu...")
 
 
@@ -70,7 +113,7 @@ def main():
             sys.exit()
         else:
             print("\nOpção inválida.")
-            input("Pressione ENTER para tentar novamente...")
+            input("\nPressione ENTER para continuar...")
 
 
 if __name__ == "__main__":
