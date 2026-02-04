@@ -1,18 +1,48 @@
-# Python
+# -----------------------------
+# PYTHON
+# -----------------------------
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+*.egg-info/
+*.egg
 
-# Banco local
+# -----------------------------
+# BANCOS DE DADOS (LOCAL)
+# -----------------------------
+*.db
+*.sqlite
 database/*.db
 database/*Copia*
+corretor_*.db
 
-# Dados processados
+# -----------------------------
+# DADOS DE ENTRADA E EXPORTAÇÃO
+# -----------------------------
+data/entrada/
+data/exportacoes/
 data/processado/
 
-# Arquivos temporários
+# -----------------------------
+# ARQUIVOS TEMPORÁRIOS
+# -----------------------------
 *.zip
+*.tmp
+*.log
 *.txt
+*.bak
+*.bundle
 
-# Sistema
+# -----------------------------
+# SISTEMA / OS
+# -----------------------------
 .DS_Store
 Thumbs.db
+
+# -----------------------------
+# CACHE E BUILD
+# -----------------------------
+.cache/
+dist/
+build/
