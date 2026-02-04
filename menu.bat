@@ -1,5 +1,10 @@
 @echo off
 title Corretor Platform - Menu
 
-REM Força CMD mesmo dentro do VSCode
-cmd /c python src\menu.py
+REM Vai para a pasta raiz do projeto
+cd /d "%~dp0"
+
+REM Executa o menu como módulo
+python -m src.menu
+
+pause
