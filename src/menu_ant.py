@@ -14,7 +14,7 @@ def limpar_tela():
 
 
 # ---------------------------------------------------------
-# INGESTÃO GERAL  (NÃO ALTERADO)
+# INGESTÃO GERAL
 # ---------------------------------------------------------
 def rodar_ingestao():
     print("\nRodando ingestão geral...\n")
@@ -31,7 +31,7 @@ def _executar_cli(args):
 
 
 # ---------------------------------------------------------
-# LISTAR EMPREENDIMENTOS
+# LISTAR EMPREENDIMENTOS (SEM FILTRO)
 # ---------------------------------------------------------
 def listar_empreendimentos():
     _executar_cli(["consultar"])
@@ -39,7 +39,7 @@ def listar_empreendimentos():
 
 
 # ---------------------------------------------------------
-# CONSULTAR EMPREENDIMENTOS
+# CONSULTAR COM FILTROS
 # ---------------------------------------------------------
 def consultar():
     print("\n=== CONSULTA DE EMPREENDIMENTOS ===\n")
@@ -81,7 +81,7 @@ def consultar():
 
 
 # ---------------------------------------------------------
-# SUBMENU DO MAILING  (NÃO ALTERADO)
+# SUBMENU DO MAILING
 # ---------------------------------------------------------
 def submenu_mailing():
     service = MailingService(MailingRepository())
@@ -158,59 +158,12 @@ def submenu_mailing():
 
 
 # ---------------------------------------------------------
-# SUBMENU DO LEAD  (NOVO — ADICIONADO SEM ALTERAR NADA EXISTENTE)
-# ---------------------------------------------------------
-def submenu_lead():
-    from src.application.lead.services.lead_service import LeadService
-    from src.infrastructure.lead.repositories.lead_repository import LeadRepository
-
-    service = LeadService(LeadRepository())
-
-    while True:
-        limpar_tela()
-        print("=" * 40)
-        print("        MENU DE LEADS")
-        print("=" * 40)
-        print("1 - Consultar leads")
-        print("2 - Rodar ingestão de leads")
-        print("0 - Voltar")
-        print("=" * 40)
-
-        opcao = input("Escolha uma opção: ").strip()
-
-        if opcao == "1":
-            limpar_tela()
-            print("CONSULTA DE LEADS\n")
-
-            registros = service.consultar()
-
-            if not registros:
-                print("Nenhum registro encontrado.")
-            else:
-                for r in registros:
-                    print(f"[{r.id}] {r.nome} - {r.email} - {r.telefone} - {r.origem} - score={r.score_lead}")
-                print(f"\nTotal: {len(registros)} registro(s).")
-
-            input("\nPressione ENTER para voltar...")
-
-        elif opcao == "2":
-            os.system("python -m src.infrastructure.ingestao.ingestao_lead")
-            input("\nPressione ENTER para voltar...")
-
-        elif opcao == "0":
-            return
-
-        else:
-            print("Opção inválida.")
-            input("\nPressione ENTER para continuar...")
-
-
-# ---------------------------------------------------------
-# MENU PRINCIPAL  (APENAS ADICIONADA A OPÇÃO 5)
+# MENU PRINCIPAL
 # ---------------------------------------------------------
 def main():
     print(">>> ESTA É A VERSÃO NOVA DO MENU")
     while True:
+#        limpar_tela()
         print("=" * 40)
         print("   CORRETOR PLATFORM - MENU")
         print("=" * 40)
@@ -218,7 +171,6 @@ def main():
         print("2 - Listar empreendimentos")
         print("3 - Consultar empreendimentos")
         print("4 - Mailing")
-        print("5 - Lead")
         print("0 - Sair")
         print("=" * 40)
 
@@ -232,8 +184,6 @@ def main():
             consultar()
         elif opcao == "4":
             submenu_mailing()
-        elif opcao == "5":
-            submenu_lead()
         elif opcao == "0":
             print("\nSaindo...")
             sys.exit()
