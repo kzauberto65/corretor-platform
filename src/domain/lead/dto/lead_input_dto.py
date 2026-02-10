@@ -20,6 +20,7 @@ class LeadInputDTO:
     metragem_min: float | None
     metragem_max: float | None
     bairro_interesse: str | None
+    regiao_interesse: str | None = None
     cidade_interesse: str | None
     urgencia: str | None
     motivo: str | None

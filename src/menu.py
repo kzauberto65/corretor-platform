@@ -14,7 +14,7 @@ def limpar_tela():
 
 
 # ---------------------------------------------------------
-# INGESTÃO GERAL  (NÃO ALTERADO)
+# INGESTÃO GERAL
 # ---------------------------------------------------------
 def rodar_ingestao():
     print("\nRodando ingestão geral...\n")
@@ -81,7 +81,7 @@ def consultar():
 
 
 # ---------------------------------------------------------
-# SUBMENU DO MAILING  (NÃO ALTERADO)
+# SUBMENU DO MAILING
 # ---------------------------------------------------------
 def submenu_mailing():
     service = MailingService(MailingRepository())
@@ -158,7 +158,7 @@ def submenu_mailing():
 
 
 # ---------------------------------------------------------
-# SUBMENU DO LEAD  (NOVO — ADICIONADO SEM ALTERAR NADA EXISTENTE)
+# SUBMENU DO LEAD
 # ---------------------------------------------------------
 def submenu_lead():
     from src.application.lead.services.lead_service import LeadService
@@ -206,7 +206,126 @@ def submenu_lead():
 
 
 # ---------------------------------------------------------
-# MENU PRINCIPAL  (APENAS ADICIONADA A OPÇÃO 5)
+# SUBMENU DO OFFER ENGINE (ATUALIZADO)
+# ---------------------------------------------------------
+def submenu_offer():
+    from src.interface.cli.offer_cli import OfferCLI
+    from src.infrastructure.offer.exporters.offer_exporter_completo import OfferExporterCompleto
+
+    cli = OfferCLI()
+
+    exporter = OfferExporterCompleto(
+        cli.service,
+        cli.lead_repository,
+        cli.empreendimento_repository
+    )
+
+    while True:
+        limpar_tela()
+        print("=" * 40)
+        print("        MENU DE OFERTAS")
+        print("=" * 40)
+        print("1 - Gerar ofertas para um lead")
+        print("2 - Gerar ofertas para todos os leads")
+        print("3 - Listar ofertas de um lead")
+        print("4 - Relatório de ofertas para um lead")
+        print("5 - Relatório de ofertas para todos os leads")
+        print("6 - Exportar ofertas de um lead (XLS)")
+        print("7 - Exportar ofertas de TODOS os leads (um arquivo por lead)")
+        print("8 - Gerar mensagem para WhatsApp")
+        print("0 - Voltar")
+        print("=" * 40)
+
+        opcao = input("Escolha uma opção: ").strip()
+
+        if opcao == "1":
+            limpar_tela()
+            cli.generate_for_lead()
+            input("\nPressione ENTER para voltar...")
+
+        elif opcao == "2":
+            limpar_tela()
+            cli.generate_for_all()
+            input("\nPressione ENTER para voltar...")
+
+        elif opcao == "3":
+            limpar_tela()
+            cli.list_by_lead()
+            input("\nPressione ENTER para voltar...")
+
+        elif opcao == "4":
+            limpar_tela()
+            cli.report_for_lead()
+            input("\nPressione ENTER para voltar...")
+
+        elif opcao == "5":
+            limpar_tela()
+            cli.report_for_all()
+            input("\nPressione ENTER para voltar...")
+
+        elif opcao == "6":
+            limpar_tela()
+            lead_id_str = input("ID do lead: ").strip()
+
+            if not lead_id_str.isdigit():
+                print("ID inválido.")
+                input("\nPressione ENTER para voltar...")
+                continue
+
+            lead_id = int(lead_id_str)
+            pasta = "data/exportacoes/ofertas"
+            os.makedirs(pasta, exist_ok=True)
+
+            caminho = os.path.join(pasta, f"lead_{lead_id}.xlsx")
+
+            try:
+                exporter.exportar_por_lead(lead_id, caminho)
+                print(f"\nArquivo exportado: {caminho}")
+            except Exception as e:
+                print(f"\nErro ao exportar: {e}")
+
+            input("\nPressione ENTER para voltar...")
+
+        elif opcao == "7":
+            limpar_tela()
+            pasta = "data/exportacoes/ofertas"
+            os.makedirs(pasta, exist_ok=True)
+
+            try:
+                arquivos = exporter.exportar_todos(pasta)
+                print(f"\n{len(arquivos)} arquivos gerados em: {pasta}")
+            except Exception as e:
+                print(f"\nErro ao exportar: {e}")
+
+            input("\nPressione ENTER para voltar...")
+
+        elif opcao == "8":
+            limpar_tela()
+            lead_id_str = input("ID do lead: ").strip()
+
+            if not lead_id_str.isdigit():
+                print("ID inválido.")
+                input("\nPressione ENTER para voltar...")
+                continue
+
+            lead_id = int(lead_id_str)
+            msg = cli.whatsapp_formatter.gerar_mensagem(lead_id)
+
+            print("\n=== MENSAGEM PARA WHATSAPP ===\n")
+            print(msg)
+            print("\n(Copie e cole no WhatsApp)")
+            input("\nPressione ENTER para voltar...")
+
+        elif opcao == "0":
+            return
+
+        else:
+            print("Opção inválida.")
+            input("\nPressione ENTER para continuar...")
+
+
+# ---------------------------------------------------------
+# MENU PRINCIPAL
 # ---------------------------------------------------------
 def main():
     print(">>> ESTA É A VERSÃO NOVA DO MENU")
@@ -219,6 +338,7 @@ def main():
         print("3 - Consultar empreendimentos")
         print("4 - Mailing")
         print("5 - Lead")
+        print("6 - Ofertas")
         print("0 - Sair")
         print("=" * 40)
 
@@ -234,6 +354,8 @@ def main():
             submenu_mailing()
         elif opcao == "5":
             submenu_lead()
+        elif opcao == "6":
+            submenu_offer()
         elif opcao == "0":
             print("\nSaindo...")
             sys.exit()

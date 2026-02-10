@@ -9,6 +9,12 @@ class LeadEntity:
     email: str | None
     telefone: str | None
     origem: str | None
+
+    # Novos campos do banco
+    data_ingestao: str | None
+    status: str | None
+
+    # Tags
     tags: str | None
 
     # Perfil imobiliário
@@ -22,6 +28,7 @@ class LeadEntity:
     metragem_min: float | None
     metragem_max: float | None
     bairro_interesse: str | None
+    regiao_interesse: str | None
     cidade_interesse: str | None
     urgencia: str | None
     motivo: str | None
@@ -35,8 +42,8 @@ class LeadEntity:
     canal_preferido: str | None
 
     # Dados ricos
-    profile_json: dict | None
-    historico_json: list | None
+    profile_json: str | None
+    historico_json: str | None
 
     # Score
     score_lead: float | None

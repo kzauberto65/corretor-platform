@@ -1,52 +1,67 @@
-from src.domain.lead.dto.lead_input_dto import LeadInputDTO
-from src.domain.lead.dto.lead_normalized_dto import LeadNormalizedDTO
-
+import unicodedata
 
 class LeadNormalizer:
 
     @staticmethod
-    def normalize(dto: LeadInputDTO) -> LeadNormalizedDTO:
-        def clean(value) -> str | None:
-            if value is None:
-                return None
-            value = str(value).strip()
-            return value if value != "" else None
+    def _clean_str(value):
+        if value is None:
+            return None
+        value = str(value).strip().lower()
+        value = unicodedata.normalize("NFKD", value).encode("ascii", "ignore").decode("ascii")
+        return value if value else None
 
-        return LeadNormalizedDTO(
-            # Básico
-            nome=clean(dto.nome),
-            email=clean(dto.email),
-            telefone=clean(dto.telefone),
-            origem=clean(dto.origem),
-            tags=clean(dto.tags),
+    @staticmethod
+    def _to_float(value, default=None):
+        try:
+            if value is None:
+                return default
+            return float(str(value).replace(",", "."))
+        except:
+            return default
+
+    @staticmethod
+    def _to_int(value, default=None):
+        try:
+            if value is None:
+                return default
+            return int(value)
+        except:
+            return default
+
+    @staticmethod
+    def normalize(dto) -> dict:
+        """
+        Aceita tanto LeadInputDTO quanto LeadEntity do banco.
+        Retorna um dicionário normalizado pronto para o MatchingEngine.
+        """
+
+        return {
+            "id": getattr(dto, "id", None),
+
+            # Strings normalizadas
+            "nome": LeadNormalizer._clean_str(getattr(dto, "nome", None)),
+            "email": LeadNormalizer._clean_str(getattr(dto, "email", None)),
+            "telefone": LeadNormalizer._clean_str(getattr(dto, "telefone", None)),
+            "origem": LeadNormalizer._clean_str(getattr(dto, "origem", None)),
+            "tags": LeadNormalizer._clean_str(getattr(dto, "tags", None)),
 
             # Perfil imobiliário
-            intencao=clean(dto.intencao),
-            tipo_imovel=clean(dto.tipo_imovel),
-            faixa_preco=clean(dto.faixa_preco),
-            preco_min=dto.preco_min,
-            preco_max=dto.preco_max,
-            quartos=dto.quartos,
-            vagas=dto.vagas,
-            metragem_min=dto.metragem_min,
-            metragem_max=dto.metragem_max,
-            bairro_interesse=clean(dto.bairro_interesse),
-            cidade_interesse=clean(dto.cidade_interesse),
-            urgencia=clean(dto.urgencia),
-            motivo=clean(dto.motivo),
+            "intencao": LeadNormalizer._clean_str(getattr(dto, "intencao", None)),
+            "tipo_imovel": LeadNormalizer._clean_str(getattr(dto, "tipo_imovel", None)),
 
-            # Marketing & Tracking
-            utm_source=clean(dto.utm_source),
-            utm_medium=clean(dto.utm_medium),
-            utm_campaign=clean(dto.utm_campaign),
-            utm_term=clean(dto.utm_term),
-            utm_content=clean(dto.utm_content),
-            canal_preferido=clean(dto.canal_preferido),
+            "preco_min": LeadNormalizer._to_float(getattr(dto, "preco_min", None), 0.0),
+            "preco_max": LeadNormalizer._to_float(getattr(dto, "preco_max", None), 999999999.0),
 
-            # Dados ricos
-            profile_json=dto.dados_completos,
-            historico_json=None,
+            "quartos": LeadNormalizer._to_int(getattr(dto, "quartos", None)),
+            "vagas": LeadNormalizer._to_int(getattr(dto, "vagas", None)),
 
-            # Score
-            score_lead=None
-        )
+            "metragem_min": LeadNormalizer._to_float(getattr(dto, "metragem_min", None)),
+            "metragem_max": LeadNormalizer._to_float(getattr(dto, "metragem_max", None)),
+
+            "bairro_interesse": LeadNormalizer._clean_str(getattr(dto, "bairro_interesse", None)),
+            "regiao_interesse": LeadNormalizer._clean_str(getattr(dto, "regiao_interesse", None)),
+            "cidade_interesse": LeadNormalizer._clean_str(getattr(dto, "cidade_interesse", None)),
+
+            "urgencia": LeadNormalizer._clean_str(getattr(dto, "urgencia", None)),
+            "motivo": LeadNormalizer._clean_str(getattr(dto, "motivo", None)),
+        }
