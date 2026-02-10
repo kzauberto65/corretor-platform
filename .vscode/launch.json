@@ -1,0 +1,12 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug menu.py",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "menu.py",
+            "console": "integratedTerminal"
+        }
+    ]
+}
