@@ -11,12 +11,13 @@ def empreendimento():
     pass
 
 # ---------------------------------------------------------
-# CONSULTAR COM FILTROS
+# CONSULTAR COM FILTROS (AGORA COM METRAGEM)
 # ---------------------------------------------------------
 @empreendimento.command()
 @click.option("--cidade")
 @click.option("--regiao")
-@click.option("--tipologia")
+@click.option("--metragem-min", type=float)
+@click.option("--metragem-max", type=float)
 @click.option("--lancamento")
 @click.option("--status")
 @click.option("--preco-min", type=float)
@@ -26,7 +27,8 @@ def empreendimento():
 def consultar(
     cidade,
     regiao,
-    tipologia,
+    metragem_min,
+    metragem_max,
     lancamento,
     status,
     preco_min,
@@ -35,11 +37,12 @@ def consultar(
     ordem
 ):
     """Consulta empreendimentos com filtros"""
-    
+
     results = service.consultar(
         cidade=cidade,
         regiao=regiao,
-        tipologia=tipologia,
+        metragem_min=metragem_min,
+        metragem_max=metragem_max,
         lancamento=lancamento,
         status=status,
         preco_min=preco_min,
@@ -53,7 +56,11 @@ def consultar(
         return
 
     for r in results:
-        click.echo(f"{r.id} - {r.nome} - {r.cidade} - {r.estado}")
+        click.echo(
+            f"{r.id} - {r.nome} - {r.cidade}/{r.estado} | "
+            f"{r.metragem_min} a {r.metragem_max} m² | "
+            f"R$ {r.preco} | Status: {r.status_entrega}"
+        )
 
 # ---------------------------------------------------------
 # BUSCAR POR ID
@@ -65,8 +72,18 @@ def buscar(id):
     r = service.buscar_por_id(id)
     if not r:
         click.echo("Empreendimento não encontrado.")
-    else:
-        click.echo(r)
+        return
+
+    click.echo(f"""
+ID: {r.id}
+Nome: {r.nome}
+Cidade: {r.cidade}
+Estado: {r.estado}
+Tipologia: {r.tipologia}
+Metragem: {r.metragem_min} a {r.metragem_max} m²
+Preço: {r.preco}
+Status: {r.status_entrega}
+    """.strip())
 
 # ---------------------------------------------------------
 # REMOVER

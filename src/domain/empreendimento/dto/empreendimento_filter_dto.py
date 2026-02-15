@@ -6,4 +6,5 @@ class EmpreendimentoFilterDTO:
     cidade: str | None = None
     estado: str | None = None
     tipo: str | None = None
-    tipologia: str | None = None
+    metragem_min: float | None = None
+    metragem_max: float | None = None

@@ -13,7 +13,11 @@ class EmpreendimentoService:
     # ---------------------------------------------------------
     def cadastrar(self, input_dto: EmpreendimentoInputDTO) -> EmpreendimentoDTO:
         normalized = EmpreendimentoNormalizer.normalize(input_dto)
-        entity = EmpreendimentoEntity(id=None, **normalized.__dict__)
+
+        data = normalized.__dict__.copy()
+        data.pop("id", None)
+
+        entity = EmpreendimentoEntity(id=None, **data)
         dto = EmpreendimentoDTO(**entity.to_dict())
         return self.repo.save(dto)
 
@@ -26,17 +30,22 @@ class EmpreendimentoService:
             return None
 
         normalized = EmpreendimentoNormalizer.normalize(input_dto)
-        atualizado = EmpreendimentoDTO(id=id, **normalized.__dict__)
+
+        data = normalized.__dict__.copy()
+        data["id"] = id
+
+        atualizado = EmpreendimentoDTO(**data)
         return self.repo.update(atualizado)
 
     # ---------------------------------------------------------
-    # CONSULTAR COM FILTROS
+    # CONSULTAR COM FILTROS (AGORA COM METRAGEM)
     # ---------------------------------------------------------
     def consultar(
         self,
         cidade=None,
         regiao=None,
-        tipologia=None,
+        metragem_min=None,
+        metragem_max=None,
         lancamento=None,
         status=None,
         preco_min=None,
@@ -47,7 +56,8 @@ class EmpreendimentoService:
         return self.repo.find_filtered(
             cidade=cidade,
             regiao=regiao,
-            tipologia=tipologia,
+            metragem_min=metragem_min,
+            metragem_max=metragem_max,
             lancamento=lancamento,
             status=status,
             preco_min=preco_min,
@@ -57,7 +67,7 @@ class EmpreendimentoService:
         )
 
     # ---------------------------------------------------------
-    # CONSULTA SIMPLES (SEM FILTROS)
+    # CONSULTA SIMPLES
     # ---------------------------------------------------------
     def listar_todos(self):
         return self.repo.find()

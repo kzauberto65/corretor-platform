@@ -15,13 +15,14 @@ class EmpreendimentoRepository:
         return conn
 
     # ---------------------------------------------------------
-    # CONSULTA COM FILTROS (LÓGICA DO QueryService)
+    # CONSULTA COM FILTROS (CORRIGIDO)
     # ---------------------------------------------------------
     def find_filtered(
         self,
         cidade=None,
         regiao=None,
-        tipologia=None,
+        metragem_min=None,
+        metragem_max=None,
         lancamento=None,
         status=None,
         preco_min=None,
@@ -29,7 +30,7 @@ class EmpreendimentoRepository:
         ordenar_por=None,
         ordem="asc",
         pagina=1,
-        por_pagina=999999  # sem paginação no menu
+        por_pagina=999999
     ):
         conn = self._conn()
         cur = conn.cursor()
@@ -37,10 +38,8 @@ class EmpreendimentoRepository:
         query = "SELECT * FROM empreendimentos WHERE 1=1"
         params = []
 
-        # normalização igual ao QueryService
         cidade = self.normalizador.texto_busca(cidade)
         regiao = self.normalizador.texto_busca(regiao)
-        tipologia = self.normalizador.texto_busca(tipologia)
         lancamento = self.normalizador.texto_busca(lancamento)
         status = self.normalizador.texto_busca(status)
 
@@ -52,9 +51,16 @@ class EmpreendimentoRepository:
             query += " AND LOWER(regiao) LIKE ?"
             params.append(f"%{regiao}%")
 
-        if tipologia:
-            query += " AND LOWER(tipologia) LIKE ?"
-            params.append(f"%{tipologia}%")
+        # ---------------------------------------------------------
+        # FILTRO POR METRAGEM (FAIXA COMPLETA DENTRO DO INTERVALO)
+        # ---------------------------------------------------------
+        if metragem_min is not None:
+            query += " AND CAST(metragem_min AS REAL) >= ?"
+            params.append(metragem_min)
+
+        if metragem_max is not None:
+            query += " AND CAST(metragem_max AS REAL) <= ?"
+            params.append(metragem_max)
 
         if lancamento:
             query += " AND LOWER(periodo_lancamento) LIKE ?"
@@ -72,7 +78,6 @@ class EmpreendimentoRepository:
             query += " AND preco <= ?"
             params.append(preco_max)
 
-        # ordenação igual ao QueryService
         ordenacoes_permitidas = {
             "preco": "preco",
             "cidade": "cidade",
@@ -89,7 +94,6 @@ class EmpreendimentoRepository:
             coluna = ordenacoes_permitidas[ordenar_por]
             query += f" ORDER BY {coluna} {ordem.upper()}"
 
-        # paginação igual ao QueryService
         pagina = max(1, int(pagina))
         por_pagina = max(1, int(por_pagina))
         offset = (pagina - 1) * por_pagina
@@ -110,7 +114,7 @@ class EmpreendimentoRepository:
         return self.find_filtered()
 
     # ---------------------------------------------------------
-    # CRUD (mantido igual)
+    # CRUD
     # ---------------------------------------------------------
     def save(self, dto: EmpreendimentoDTO) -> EmpreendimentoDTO:
         conn = self._conn()
@@ -120,15 +124,17 @@ class EmpreendimentoRepository:
                 regiao, bairro, cidade, estado, produto, endereco,
                 data_entrega, status_entrega, tipo, descricao, preco,
                 proprietario_id, incorporadora_id, unidade_referencia_id,
-                spe_id, periodo_lancamento, nome, tipologia
+                spe_id, periodo_lancamento, nome, tipologia,
+                metragem_min, metragem_max
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             dto.regiao, dto.bairro, dto.cidade, dto.estado, dto.produto,
             dto.endereco, dto.data_entrega, dto.status_entrega, dto.tipo,
             dto.descricao, dto.preco, dto.proprietario_id,
             dto.incorporadora_id, dto.unidade_referencia_id, dto.spe_id,
-            dto.periodo_lancamento, dto.nome, dto.tipologia
+            dto.periodo_lancamento, dto.nome, dto.tipologia,
+            dto.metragem_min, dto.metragem_max
         ))
         dto.id = cur.lastrowid
         conn.commit()
@@ -152,7 +158,7 @@ class EmpreendimentoRepository:
                 endereco = ?, data_entrega = ?, status_entrega = ?, tipo = ?,
                 descricao = ?, preco = ?, proprietario_id = ?, incorporadora_id = ?,
                 unidade_referencia_id = ?, spe_id = ?, periodo_lancamento = ?,
-                nome = ?, tipologia = ?
+                nome = ?, tipologia = ?, metragem_min = ?, metragem_max = ?
             WHERE id = ?
         """, (
             dto.regiao, dto.bairro, dto.cidade, dto.estado, dto.produto,
@@ -160,6 +166,7 @@ class EmpreendimentoRepository:
             dto.descricao, dto.preco, dto.proprietario_id,
             dto.incorporadora_id, dto.unidade_referencia_id, dto.spe_id,
             dto.periodo_lancamento, dto.nome, dto.tipologia,
+            dto.metragem_min, dto.metragem_max,
             dto.id
         ))
         conn.commit()
