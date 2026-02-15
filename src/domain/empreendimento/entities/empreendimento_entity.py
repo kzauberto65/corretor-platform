@@ -21,6 +21,8 @@ class EmpreendimentoEntity:
     periodo_lancamento: str | None
     nome: str | None
     tipologia: str | None
+    metragem_min: float | None
+    metragem_max: float | None
 
     def to_dict(self):
         return self.__dict__

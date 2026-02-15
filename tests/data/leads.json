@@ -1,0 +1,50 @@
+[
+    {
+        "id": 1,
+        "nome": "João Silva",
+        "email": "joao@example.com",
+        "telefone": "11999990001",
+        "cidade_interesse": "sao paulo",
+        "regiao_interesse": "zona sul",
+        "bairro_interesse": "moema",
+        "tipo_imovel": "apartamento",
+        "quartos": 2,
+        "metragem_min": 40,
+        "metragem_max": 60,
+        "preco_min": 300000,
+        "preco_max": 600000,
+        "urgencia": "alta"
+    },
+    {
+        "id": 2,
+        "nome": "Maria Oliveira",
+        "email": "maria@example.com",
+        "telefone": "11999990002",
+        "cidade_interesse": "sao paulo",
+        "regiao_interesse": "zona oeste",
+        "bairro_interesse": "pinheiros",
+        "tipo_imovel": "studio",
+        "quartos": 1,
+        "metragem_min": 20,
+        "metragem_max": 35,
+        "preco_min": 200000,
+        "preco_max": 400000,
+        "urgencia": "media"
+    },
+    {
+        "id": 3,
+        "nome": "Carlos Mendes",
+        "email": "carlos@example.com",
+        "telefone": "11999990003",
+        "cidade_interesse": "campinas",
+        "regiao_interesse": "centro",
+        "bairro_interesse": "cambuí",
+        "tipo_imovel": "apartamento",
+        "quartos": 3,
+        "metragem_min": 70,
+        "metragem_max": 100,
+        "preco_min": 500000,
+        "preco_max": 900000,
+        "urgencia": "baixa"
+    }
+]

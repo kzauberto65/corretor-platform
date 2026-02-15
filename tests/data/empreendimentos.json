@@ -1,0 +1,62 @@
+[
+    {
+        "id": 101,
+        "cidade": "sao paulo",
+        "regiao": "zona sul",
+        "bairro": "moema",
+        "tipo": "apartamento",
+        "tipologia": "2 dorm",
+        "quartos": 2,
+        "metragem_min": 45,
+        "metragem_max": 55,
+        "preco": 550000
+    },
+    {
+        "id": 102,
+        "cidade": "sao paulo",
+        "regiao": "zona oeste",
+        "bairro": "pinheiros",
+        "tipo": "studio",
+        "tipologia": "studio",
+        "quartos": 1,
+        "metragem_min": 25,
+        "metragem_max": 30,
+        "preco": 350000
+    },
+    {
+        "id": 103,
+        "cidade": "campinas",
+        "regiao": "centro",
+        "bairro": "cambuí",
+        "tipo": "apartamento",
+        "tipologia": "3 dorm",
+        "quartos": 3,
+        "metragem_min": 80,
+        "metragem_max": 95,
+        "preco": 750000
+    },
+    {
+        "id": 104,
+        "cidade": "sao paulo",
+        "regiao": "zona sul",
+        "bairro": "vila mariana",
+        "tipo": "apartamento",
+        "tipologia": "2 dorm",
+        "quartos": 2,
+        "metragem_min": 70,
+        "metragem_max": 90,
+        "preco": 650000
+    },
+    {
+        "id": 105,
+        "cidade": "sao paulo",
+        "regiao": "zona sul",
+        "bairro": "moema",
+        "tipo": "apartamento",
+        "tipologia": "1 dorm",
+        "quartos": 1,
+        "metragem_min": 35,
+        "metragem_max": 45,
+        "preco": 420000
+    }
+]
