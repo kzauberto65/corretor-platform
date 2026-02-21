@@ -1,3 +1,4 @@
+from datetime import datetime
 from src.domain.lead.dto.lead_input_dto import LeadInputDTO
 from src.domain.lead.dto.lead_dto import LeadDTO
 from src.domain.lead.entities.lead_entity import LeadEntity
@@ -10,11 +11,24 @@ class LeadService:
     def __init__(self, repository: LeadRepository):
         self.repository = repository
 
+    from datetime import datetime
+
     # ---------------------------------------------------------
     # CADASTRAR
     # ---------------------------------------------------------
     def cadastrar(self, dto: LeadInputDTO) -> LeadDTO:
-        normalized = LeadNormalizer.normalize(dto)
+
+        # Normaliza e retorna um dict
+        normalized_dict = LeadNormalizer.normalize(dto)
+
+        # Remove campos que NÃO pertencem ao LeadInputDTO
+        normalized_dict.pop("id", None)
+        normalized_dict.pop("profile_json", None)
+        normalized_dict.pop("historico_json", None)
+        normalized_dict.pop("score_lead", None)
+
+        # Reconstrói o DTO normalizado
+        normalized = LeadInputDTO(**normalized_dict)
 
         entity = LeadEntity(
             id=None,
@@ -38,6 +52,7 @@ class LeadService:
             metragem_max=normalized.metragem_max,
             bairro_interesse=normalized.bairro_interesse,
             cidade_interesse=normalized.cidade_interesse,
+            regiao_interesse=normalized.regiao_interesse,
             urgencia=normalized.urgencia,
             motivo=normalized.motivo,
 
@@ -50,15 +65,19 @@ class LeadService:
             canal_preferido=normalized.canal_preferido,
 
             # Dados ricos
-            profile_json=normalized.profile_json,
-            historico_json=normalized.historico_json,
+            profile_json=None,
+            historico_json=None,
 
             # Score
-            score_lead=normalized.score_lead,
+            score_lead=None,
 
             # Auditoria
             criado_em=None,
-            atualizado_em=None
+            atualizado_em=None,
+
+            # CAMPOS OBRIGATÓRIOS DO LeadEntity
+            data_ingestao=datetime.now(),
+            status="novo"
         )
 
         created = self.repository.cadastrar(entity)
@@ -68,7 +87,12 @@ class LeadService:
     # ATUALIZAR
     # ---------------------------------------------------------
     def atualizar(self, id: int, dto: LeadInputDTO) -> LeadDTO:
-        normalized = LeadNormalizer.normalize(dto)
+        normalized_dict = LeadNormalizer.normalize(dto)
+
+        # Remove campos que não pertencem ao DTO
+        normalized_dict.pop("id", None)
+
+        normalized = LeadInputDTO(**normalized_dict)
 
         entity = LeadEntity(
             id=id,
@@ -92,6 +116,7 @@ class LeadService:
             metragem_max=normalized.metragem_max,
             bairro_interesse=normalized.bairro_interesse,
             cidade_interesse=normalized.cidade_interesse,
+            regiao_interesse=normalized.regiao_interesse,
             urgencia=normalized.urgencia,
             motivo=normalized.motivo,
 
@@ -104,15 +129,19 @@ class LeadService:
             canal_preferido=normalized.canal_preferido,
 
             # Dados ricos
-            profile_json=normalized.profile_json,
-            historico_json=normalized.historico_json,
+            profile_json=None,
+            historico_json=None,
 
             # Score
-            score_lead=normalized.score_lead,
+            score_lead=None,
 
             # Auditoria
             criado_em=None,
-            atualizado_em=None
+            atualizado_em=datetime.now(),
+
+            # CAMPOS OBRIGATÓRIOS
+            data_ingestao=None,  # já existe no banco
+            status="atualizado"
         )
 
         updated = self.repository.atualizar(entity)

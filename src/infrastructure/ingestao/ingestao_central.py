@@ -165,7 +165,9 @@ class IngestaoCentral:
             preco=self.norm.moeda(r.get("Valor")),
             spe_id=None,
             incorporadora_id=incorporadora.id if incorporadora else None,
-            proprietario_id=None
+            proprietario_id=None,
+            metragem_min=self.norm.numero(r.get("MetragemMin")),
+            metragem_max=self.norm.numero(r.get("MetragemMax"))
         )
 
         empreendimento = self.empreendimento_service.cadastrar(dto)

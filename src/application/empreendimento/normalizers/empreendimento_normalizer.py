@@ -16,20 +16,12 @@ class EmpreendimentoNormalizer:
 
     @staticmethod
     def _extract_metragem(value):
-        """
-        Converte strings como:
-        - '24 a 70 m2'
-        - '24 A 29 M2'
-        - '24,69 a 33,39 m2'
-        - '110 a 180 m2'
-        em (min, max)
-        """
         if not value:
             return None, None
 
         value = value.replace(",", ".").lower()
-
         match = re.findall(r"(\d+\.?\d*)", value)
+
         if len(match) >= 2:
             return float(match[0]), float(match[1])
 
@@ -56,7 +48,15 @@ class EmpreendimentoNormalizer:
         return tipo
 
     @staticmethod
-    def normalize(input_dto: EmpreendimentoInputDTO) -> EmpreendimentoNormalizedDTO:
+    def normalize(input_dto) -> EmpreendimentoNormalizedDTO:
+        """
+        Funciona tanto para:
+        - EmpreendimentoInputDTO (ingestão)
+        - EmpreendimentoDTO (banco → Offer Engine)
+        """
+
+        # 🔵 Se o DTO tiver id, preserva. Se não tiver, vira None.
+        id_value = getattr(input_dto, "id", None)
 
         cidade = EmpreendimentoNormalizer._clean_str(input_dto.cidade)
         bairro = EmpreendimentoNormalizer._clean_str(input_dto.bairro)
@@ -69,7 +69,7 @@ class EmpreendimentoNormalizer:
         )
 
         return EmpreendimentoNormalizedDTO(
-            id=input_dto.id, # ← ESTA LINHA RESOLVE TUDO
+            id=id_value,
             regiao=regiao,
             bairro=bairro,
             cidade=cidade,

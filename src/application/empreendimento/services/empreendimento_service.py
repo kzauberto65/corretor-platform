@@ -12,14 +12,39 @@ class EmpreendimentoService:
     # CADASTRAR
     # ---------------------------------------------------------
     def cadastrar(self, input_dto: EmpreendimentoInputDTO) -> EmpreendimentoDTO:
+        # Normaliza o DTO
         normalized = EmpreendimentoNormalizer.normalize(input_dto)
 
-        data = normalized.__dict__.copy()
-        data.pop("id", None)
+        # Constrói a entidade diretamente
+        entity = EmpreendimentoEntity(
+            id=None,
+            nome=normalized.nome,
+            regiao=normalized.regiao,
+            bairro=normalized.bairro,
+            cidade=normalized.cidade,
+            estado=normalized.estado,
+            produto=normalized.produto,
+            endereco=normalized.endereco,
+            tipologia=normalized.tipologia,
+            data_entrega=normalized.data_entrega,
+            status_entrega=normalized.status_entrega,
+            tipo=normalized.tipo,
+            descricao=normalized.descricao,
+            periodo_lancamento=normalized.periodo_lancamento,
+            preco=normalized.preco,
+            unidade_referencia_id=normalized.unidade_referencia_id,
+            incorporadora_id=normalized.incorporadora_id,
+            proprietario_id=normalized.proprietario_id,
+            spe_id=normalized.spe_id,
+            metragem_min=normalized.metragem_min,
+            metragem_max=normalized.metragem_max
+        )
 
-        entity = EmpreendimentoEntity(id=None, **data)
-        dto = EmpreendimentoDTO(**entity.to_dict())
-        return self.repo.save(dto)
+        # Salva a entidade no repositório
+        saved_dto = self.repo.save(EmpreendimentoDTO(**entity.to_dict()))
+
+        # Retorna DTO final com ID preenchido
+        return saved_dto
 
     # ---------------------------------------------------------
     # ATUALIZAR
