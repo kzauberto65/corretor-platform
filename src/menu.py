@@ -66,13 +66,13 @@ def consultar():
     if regiao:
         args += ["--regiao", regiao]
 
-    if metragem_min != "":
+    if metragem_min:
         try:
             args += ["--metragem-min", str(float(metragem_min))]
         except:
             pass
 
-    if metragem_max != "":
+    if metragem_max:
         try:
             args += ["--metragem-max", str(float(metragem_max))]
         except:
@@ -83,13 +83,13 @@ def consultar():
     if status:
         args += ["--status", status]
 
-    if preco_min != "":
+    if preco_min:
         try:
             args += ["--preco-min", str(float(preco_min))]
         except:
             pass
 
-    if preco_max != "":
+    if preco_max:
         try:
             args += ["--preco-max", str(float(preco_max))]
         except:
@@ -101,12 +101,11 @@ def consultar():
         args += ["--ordem", ordem]
 
     _executar_cli(args)
-
     input("\nPressione ENTER para voltar ao menu...")
 
 
 # ---------------------------------------------------------
-# SUBMENU DO MAILING
+# SUBMENU MAILING
 # ---------------------------------------------------------
 def submenu_mailing():
     service = MailingService(MailingRepository())
@@ -183,7 +182,7 @@ def submenu_mailing():
 
 
 # ---------------------------------------------------------
-# SUBMENU DO LEAD
+# SUBMENU LEAD
 # ---------------------------------------------------------
 def submenu_lead():
     from src.application.lead.services.lead_service import LeadService
@@ -231,7 +230,282 @@ def submenu_lead():
 
 
 # ---------------------------------------------------------
-# SUBMENU DO OFFER ENGINE
+# SUBMENU MATCHING ENGINE (Sprint 9)
+# ---------------------------------------------------------
+def submenu_matching():
+    while True:
+        limpar_tela()
+        print("=" * 40)
+        print("        MATCHING ENGINE (Sprint 9)")
+        print("=" * 40)
+        print("1 - Matching para um lead")
+        print("2 - Matching para todos os leads")
+        print("3 - Listar matchings de um lead")
+        print("4 - Melhores matchings de um lead")
+        print("5 - Exportar matching de um lead (XLS)")
+        print("6 - Exportar matching de TODOS os leads (XLS)")
+        print("7 - Gerar mensagem para WhatsApp")
+        print("0 - Voltar")
+        print("=" * 40)
+
+        opcao = input("Escolha uma opção: ").strip()
+
+        if opcao == "1":
+            lead_id = input("\nID do lead: ").strip()
+            if lead_id.isdigit():
+                subprocess.run([
+                    "python", "-m", "src.interface.cli.matching_cli",
+                    "run", "--lead-id", lead_id
+                ])
+            input("\nPressione ENTER para voltar...")
+
+        elif opcao == "2":
+            subprocess.run([
+                "python", "-m", "src.interface.cli.matching_cli",
+                "run-all"
+            ])
+            input("\nPressione ENTER para voltar...")
+
+        elif opcao == "3":
+            lead_id = input("\nID do lead: ").strip()
+            if lead_id.isdigit():
+                subprocess.run([
+                    "python", "-m", "src.interface.cli.matching_cli",
+                    "list", "--lead-id", lead_id
+                ])
+            input("\nPressione ENTER para voltar...")
+
+        elif opcao == "4":
+            lead_id = input("\nID do lead: ").strip()
+            limit = input("Limite (padrão 5): ").strip() or "5"
+            if lead_id.isdigit():
+                subprocess.run([
+                    "python", "-m", "src.interface.cli.matching_cli",
+                    "best", "--lead-id", lead_id, "--limit", limit
+                ])
+            input("\nPressione ENTER para voltar...")
+
+        elif opcao == "5":
+            lead_id = input("\nID do lead: ").strip()
+            if not lead_id.isdigit():
+                print("ID inválido.")
+                input("\nPressione ENTER para voltar...")
+                continue
+
+            pasta = "data/exportacoes/matching"
+            os.makedirs(pasta, exist_ok=True)
+            caminho = f"{pasta}/lead_{lead_id}.xlsx"
+
+            subprocess.run([
+                "python", "-m", "src.interface.cli.matching_cli",
+                "export", "--lead-id", lead_id, "--out", caminho
+            ])
+
+            print(f"\nArquivo exportado: {caminho}")
+            input("\nPressione ENTER para voltar...")
+
+        elif opcao == "6":
+            pasta = "data/exportacoes/matching"
+            os.makedirs(pasta, exist_ok=True)
+
+            subprocess.run([
+                "python", "-m", "src.interface.cli.matching_cli",
+                "export-all", "--out", pasta
+            ])
+
+            print(f"\nArquivos exportados em: {pasta}")
+            input("\nPressione ENTER para voltar...")
+
+        elif opcao == "7":
+            lead_id = input("\nID do lead: ").strip()
+            if not lead_id.isdigit():
+                print("ID inválido.")
+                input("\nPressione ENTER para voltar...")
+                continue
+
+            subprocess.run([
+                "python", "-m", "src.interface.cli.matching_cli",
+                "whatsapp", "--lead-id", lead_id
+            ])
+
+            input("\nPressione ENTER para voltar...")
+
+        elif opcao == "0":
+            return
+
+        else:
+            print("Opção inválida.")
+            input("\nPressione ENTER para continuar...")
+
+
+# ---------------------------------------------------------
+# SUBMENU IA ENGINE (Sprint 10)
+# ---------------------------------------------------------
+def submenu_ia():
+    while True:
+        limpar_tela()
+        print("=" * 40)
+        print("        IA ENGINE (Sprint 10)")
+        print("=" * 40)
+        print("1 - IA para um lead")
+        print("2 - IA para todos os leads")
+        print("3 - Listar IA de um lead")
+        print("4 - Melhores IA de um lead")
+        print("5 - Exportar IA de um lead (XLS)")
+        print("6 - Exportar IA de TODOS os leads (XLS)")
+        print("7 - Listar IA de TODOS os leads")          # NOVO
+        print("8 - Dashboard IA (Painel Geral)")          # NOVO
+        print("9 - Exportar Dashboard (XLS)")             # NOVO
+        print("10- Whatsapp (Texto Pronto)")              # NOVO
+        print("0 - Voltar")
+        print("=" * 40)
+
+        opcao = input("Escolha uma opção: ").strip()
+
+        # ---------------------------------------------------------
+        # 1 - IA para um lead
+        # ---------------------------------------------------------
+        if opcao == "1":
+            lead_id = input("\nID do lead: ").strip()
+            if lead_id.isdigit():
+                subprocess.run([
+                    "python", "-m", "src.interface.cli.ia_cli",
+                    "run", "--lead-id", lead_id
+                ])
+            input("\nPressione ENTER para voltar...")
+
+        # ---------------------------------------------------------
+        # 2 - IA para todos os leads
+        # ---------------------------------------------------------
+        elif opcao == "2":
+            subprocess.run([
+                "python", "-m", "src.interface.cli.ia_cli",
+                "run-all"
+            ])
+            input("\nPressione ENTER para voltar...")
+
+        # ---------------------------------------------------------
+        # 3 - Listar IA de um lead
+        # ---------------------------------------------------------
+        elif opcao == "3":
+            lead_id = input("\nID do lead: ").strip()
+            if lead_id.isdigit():
+                subprocess.run([
+                    "python", "-m", "src.interface.cli.ia_cli",
+                    "list", "--lead-id", lead_id
+                ])
+            input("\nPressione ENTER para voltar...")
+
+        # ---------------------------------------------------------
+        # 4 - Melhores IA de um lead
+        # ---------------------------------------------------------
+        elif opcao == "4":
+            lead_id = input("\nID do lead: ").strip()
+            limit = input("Limite (padrão 5): ").strip() or "5"
+            if lead_id.isdigit():
+                subprocess.run([
+                    "python", "-m", "src.interface.cli.ia_cli",
+                    "best", "--lead-id", lead_id, "--limit", limit
+                ])
+            input("\nPressione ENTER para voltar...")
+
+        # ---------------------------------------------------------
+        # 5 - Exportar IA de um lead
+        # ---------------------------------------------------------
+        elif opcao == "5":
+            lead_id = input("\nID do lead: ").strip()
+            if not lead_id.isdigit():
+                print("ID inválido.")
+                input("\nPressione ENTER para voltar...")
+                continue
+
+            pasta = "data/exportacoes/ia"
+            os.makedirs(pasta, exist_ok=True)
+            caminho = f"{pasta}/lead_{lead_id}.xlsx"
+
+            subprocess.run([
+                "python", "-m", "src.interface.cli.ia_cli",
+                "export", "--lead-id", lead_id, "--out", caminho
+            ])
+
+            print(f"\nArquivo exportado: {caminho}")
+            input("\nPressione ENTER para voltar...")
+
+        # ---------------------------------------------------------
+        # 6 - Exportar IA de TODOS os leads
+        # ---------------------------------------------------------
+        elif opcao == "6":
+            pasta = "data/exportacoes/ia"
+            os.makedirs(pasta, exist_ok=True)
+
+            subprocess.run([
+                "python", "-m", "src.interface.cli.ia_cli",
+                "export-all", "--out", pasta
+            ])
+
+            print(f"\nArquivos exportados em: {pasta}")
+            input("\nPressione ENTER para voltar...")
+
+        # ---------------------------------------------------------
+        # 7 - Listar IA de TODOS os leads (NOVO)
+        # ---------------------------------------------------------
+        elif opcao == "7":
+            subprocess.run([
+                "python", "-m", "src.interface.cli.ia_cli",
+                "list-all"
+            ])
+            input("\nPressione ENTER para voltar...")
+
+        # ---------------------------------------------------------
+        # 8 - Dashboard IA (NOVO)
+        # ---------------------------------------------------------
+        elif opcao == "8":
+            subprocess.run([
+                "python", "-m", "src.interface.cli.ia_cli",
+                "dashboard"
+            ])
+            input("\nPressione ENTER para voltar...")
+
+        # ---------------------------------------------------------
+        # 9 - Exportar Dashboard IA (NOVO)
+        # ---------------------------------------------------------
+        elif opcao == "9":
+            caminho = "data/exportacoes/ia/dashboard.xlsx"
+            subprocess.run([
+                "python", "-m", "src.interface.cli.ia_cli",
+                "export-dashboard", "--out", caminho
+            ])
+            print(f"\nDashboard exportado: {caminho}")
+            input("\nPressione ENTER para voltar...")
+
+        # ---------------------------------------------------------
+        # 10 - WhatsApp IA (NOVO)
+        # ---------------------------------------------------------
+        elif opcao == "10":
+            lead_id = input("\nID do lead: ").strip()
+            mode = input("Modo (curta, media, longa, premium): ").strip() or "premium"
+
+            subprocess.run([
+                "python", "-m", "src.interface.cli.ia_cli",
+                "whatsapp", "--lead-id", lead_id, "--mode", mode
+            ])
+
+            input("\nPressione ENTER para voltar...")
+
+
+        # ---------------------------------------------------------
+        # 0 - Voltar
+        # ---------------------------------------------------------
+        elif opcao == "0":
+            return
+
+        else:
+            print("Opção inválida.")
+            input("\nPressione ENTER para continuar...")
+
+
+# ---------------------------------------------------------
+# SUBMENU OFFER ENGINE
 # ---------------------------------------------------------
 def submenu_offer():
     from src.interface.cli.offer_cli import OfferCLI
@@ -259,6 +533,7 @@ def submenu_offer():
         print("7 - Exportar ofertas de TODOS os leads")
         print("8 - Gerar mensagem para WhatsApp")
         print("9 - Matching Engine (Sprint 9)")
+        print("10 - IA Engine (Sprint 10)")
         print("0 - Voltar")
         print("=" * 40)
 
@@ -342,120 +617,18 @@ def submenu_offer():
             print("\n(Copie e cole no WhatsApp)")
             input("\nPressione ENTER para voltar...")
 
-        # ---------------------------------------------------------
-        # AQUI ESTÁ A ÚNICA PARTE AJUSTADA: MATCHING ENGINE
-        # ---------------------------------------------------------
         elif opcao == "9":
-            limpar_tela()
-            print("=" * 40)
-            print("        MATCHING ENGINE (Sprint 9)")
-            print("=" * 40)
-            print("1 - Matching para um lead")
-            print("2 - Matching para todos os leads")
-            print("3 - Listar matchings de um lead")
-            print("4 - Melhores matchings de um lead")
-            print("5 - Exportar matching de um lead (XLS)")
-            print("6 - Exportar matching de TODOS os leads (XLS)")
-            print("7 - Gerar mensagem para WhatsApp")
-            print("0 - Voltar")
-            print("=" * 40)
+            submenu_matching()
 
-            opcao = input("Escolha uma opção: ").strip()
+        elif opcao == "10":
+            submenu_ia()
 
-            # 1 - Matching para um lead
-            if opcao == "1":
-                lead_id = input("\nID do lead: ").strip()
-                if lead_id.isdigit():
-                    subprocess.run([
-                        "python", "-m", "src.interface.cli.matching_cli",
-                        "run", "--lead-id", lead_id
-                    ])
-                input("\nPressione ENTER para voltar...")
+        elif opcao == "0":
+            return
 
-            # 2 - Matching para todos os leads
-            elif opcao == "2":
-                subprocess.run([
-                    "python", "-m", "src.interface.cli.matching_cli",
-                    "run-all"
-                ])
-                input("\nPressione ENTER para voltar...")
-
-            # 3 - Listar matchings
-            elif opcao == "3":
-                lead_id = input("\nID do lead: ").strip()
-                if lead_id.isdigit():
-                    subprocess.run([
-                        "python", "-m", "src.interface.cli.matching_cli",
-                        "list", "--lead-id", lead_id
-                    ])
-                input("\nPressione ENTER para voltar...")
-
-            # 4 - Melhores matchings
-            elif opcao == "4":
-                lead_id = input("\nID do lead: ").strip()
-                limit = input("Limite (padrão 5): ").strip() or "5"
-                if lead_id.isdigit():
-                    subprocess.run([
-                        "python", "-m", "src.interface.cli.matching_cli",
-                        "best", "--lead-id", lead_id, "--limit", limit
-                    ])
-                input("\nPressione ENTER para voltar...")
-
-            # 5 - Exportar matching de um lead
-            elif opcao == "5":
-                lead_id = input("\nID do lead: ").strip()
-                if not lead_id.isdigit():
-                    print("ID inválido.")
-                    input("\nPressione ENTER para voltar...")
-                    continue
-
-                pasta = "data/exportacoes/matching"
-                os.makedirs(pasta, exist_ok=True)
-                caminho = f"{pasta}/lead_{lead_id}.xlsx"
-
-                subprocess.run([
-                    "python", "-m", "src.interface.cli.matching_cli",
-                    "export", "--lead-id", lead_id, "--out", caminho
-                ])
-
-                print(f"\nArquivo exportado: {caminho}")
-                input("\nPressione ENTER para voltar...")
-
-            # 6 - Exportar matching de todos os leads
-            elif opcao == "6":
-                pasta = "data/exportacoes/matching"
-                os.makedirs(pasta, exist_ok=True)
-
-                subprocess.run([
-                    "python", "-m", "src.interface.cli.matching_cli",
-                    "export-all", "--out", pasta
-                ])
-
-                print(f"\nArquivos exportados em: {pasta}")
-                input("\nPressione ENTER para voltar...")
-
-            # 7 - Mensagem WhatsApp 
-            elif opcao == "7": 
-                lead_id = input("\nID do lead: ").strip() 
-                if not lead_id.isdigit(): 
-                    print("ID inválido.") 
-                    input("\nPressione ENTER para voltar...") 
-                    continue 
-                
-                subprocess.run([
-                    "python", "-m", "src.interface.cli.matching_cli", 
-                    "whatsapp", "--lead-id", lead_id
-                ]) 
-                
-                input("\nPressione ENTER para voltar...")
-            
-            elif opcao == "0":
-                return
-
-            else:
-                print("Opção inválida.")
-                input("\nPressione ENTER para continuar...")
-
+        else:
+            print("Opção inválida.")
+            input("\nPressione ENTER para continuar...")
 
 # ---------------------------------------------------------
 # MENU PRINCIPAL

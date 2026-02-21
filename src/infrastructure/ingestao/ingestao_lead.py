@@ -26,7 +26,10 @@ class IngestaoLead(BaseIngestor):
 
         for d in dados:
 
-            # 🔥 Função universal para tratar QUALQUER tipo antes do normalizador
+            # Cria o DTO bruto
+            dto = LeadInputDTO(**d)
+
+            # Função universal para tratar tipos antes da normalização
             def tratar_valor(valor):
 
                 if valor is None:
@@ -46,33 +49,21 @@ class IngestaoLead(BaseIngestor):
 
                 return str(valor)
 
-            # Campos básicos
-            campos_basicos = ["nome", "email", "telefone", "origem", "tags"]
-            for campo in campos_basicos:
-                valor = tratar_valor(d.get(campo))
-                d[campo] = self.norm.texto(valor)
+            # Normaliza campo a campo diretamente no DTO
+            for campo, valor in dto.__dict__.items():
 
-            # Campos específicos do Lead
-            campos_lead = [
-                "intencao", "tipo_imovel", "faixa_preco",
-                "bairro_interesse", "cidade_interesse",
-                "urgencia", "motivo",
-                "utm_source", "utm_medium", "utm_campaign",
-                "utm_term", "utm_content", "canal_preferido",
-                "preco_min", "preco_max",
-                "quartos", "vagas",
-                "metragem_min", "metragem_max",
-                "dados_completos"
-            ]
+                valor_tratado = tratar_valor(valor)
 
-            for campo in campos_lead:
-                valor = tratar_valor(d.get(campo))
-                d[campo] = self.norm.texto(valor) if isinstance(valor, str) else valor
+                # Normaliza apenas strings
+                if isinstance(valor_tratado, str):
+                    setattr(dto, campo, self.norm.texto(valor_tratado))
+                else:
+                    setattr(dto, campo, valor_tratado)
 
-            dto = LeadInputDTO(**d)
             dtos.append(dto)
 
         return dtos
+
 
     def salvar(self, dados):
         resultados = []

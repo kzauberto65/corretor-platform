@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-
 @dataclass
 class EmpreendimentoInputDTO:
     regiao: str | None
@@ -20,3 +19,5 @@ class EmpreendimentoInputDTO:
     periodo_lancamento: str | None
     nome: str | None
     tipologia: str | None
+    metragem_min: float | None
+    metragem_max: float | None
