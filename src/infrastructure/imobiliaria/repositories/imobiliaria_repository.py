@@ -1,56 +1,97 @@
+# ============================================================
+# REPOSITORY: ImobiliariaRepository
+# Camada: infrastructure/imobiliaria/repositories/
+# Descrição: Operações de persistência para Imobiliaria.
+#            Implementa CRUD unificado com SQLite.
+# Sprint: 10.5 — alinhado ao novo schema
+# ============================================================
+# ====
+
 import sqlite3
-from src.domain.imobiliaria.dto.imobiliaria_dto import ImobiliariaDTO
+from typing import List, Optional
+from src.domain.imobiliaria.entities.imobiliaria_entity import ImobiliariaEntity
+
 
 class ImobiliariaRepository:
 
-    def __init__(self, db_path="src/infrastructure/database/corretor.db"):
+    def __init__(self, db_path: str = "src/infrastructure/database/corretor.db"):
         self.db_path = db_path
+        self._init_db()
 
-    def _conn(self):
-        return sqlite3.connect(self.db_path)
+    def _get_connection(self) -> sqlite3.Connection:
+        """Cria e retorna uma conexão configurada."""
+        conn = sqlite3.connect(self.db_path)
+        conn.row_factory = sqlite3.Row  # Permite acessar colunas pelo nome (row['nome'])
+        conn.execute("PRAGMA foreign_keys = ON")
+        return conn
 
-    def save(self, dto: ImobiliariaDTO) -> ImobiliariaDTO:
-        conn = self._conn()
-        cur = conn.cursor()
-        cur.execute("""
-            INSERT INTO imobiliarias (nome, cnpj, contato, observacoes)
-            VALUES (?, ?, ?, ?)
-        """, (dto.nome, dto.cnpj, dto.contato, dto.observacoes))
-        dto.id = cur.lastrowid
-        conn.commit()
-        conn.close()
-        return dto
+    def _init_db(self):
+        """Garante que a tabela exista antes de qualquer operação."""
+        with self._get_connection() as conn:
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS imobiliarias (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    nome TEXT NOT NULL,
+                    cnpj TEXT,
+                    contato TEXT,
+                    observacoes TEXT
+                )
+            """)
 
-    def update(self, dto: ImobiliariaDTO) -> ImobiliariaDTO:
-        conn = self._conn()
-        cur = conn.cursor()
-        cur.execute("""
-            UPDATE imobiliarias SET nome = ?, cnpj = ?, contato = ?, observacoes = ?
-            WHERE id = ?
-        """, (dto.nome, dto.cnpj, dto.contato, dto.observacoes, dto.id))
-        conn.commit()
-        conn.close()
-        return dto
+    # ----------------------------------------------------------
+    # MAPPER (Obrigatório pela arquitetura)
+    # ----------------------------------------------------------
+    def _row_to_entity(self, row: sqlite3.Row) -> ImobiliariaEntity:
+        """Converte uma linha do banco de dados para a ImobiliariaEntity."""
+        return ImobiliariaEntity(
+            id=row["id"],
+            nome=row["nome"],
+            cnpj=row["cnpj"],
+            contato=row["contato"],
+            observacoes=row["observacoes"]
+        )
 
-    def find(self):
-        conn = self._conn()
-        cur = conn.cursor()
-        cur.execute("SELECT * FROM imobiliarias")
-        rows = cur.fetchall()
-        conn.close()
-        return [ImobiliariaDTO(*r) for r in rows]
+    # ----------------------------------------------------------
+    # OPERAÇÕES CRUD PADRONIZADAS
+    # ----------------------------------------------------------
+    def save(self, entity: ImobiliariaEntity) -> ImobiliariaEntity:
+        """
+        Salva a entidade. 
+        Faz INSERT se o ID for None, caso contrário faz UPDATE.
+        """
+        with self._get_connection() as conn:
+            if entity.id is None:
+                cursor = conn.execute("""
+                    INSERT INTO imobiliarias (nome, cnpj, contato, observacoes)
+                    VALUES (?, ?, ?, ?)
+                """, (entity.nome, entity.cnpj, entity.contato, entity.observacoes))
+                entity.id = cursor.lastrowid
+            else:
+                conn.execute("""
+                    UPDATE imobiliarias SET 
+                        nome = ?, cnpj = ?, contato = ?, observacoes = ?
+                    WHERE id = ?
+                """, (entity.nome, entity.cnpj, entity.contato, entity.observacoes, entity.id))
+        return entity
 
-    def find_by_id(self, id: int):
-        conn = self._conn()
-        cur = conn.cursor()
-        cur.execute("SELECT * FROM imobiliarias WHERE id = ?", (id,))
-        r = cur.fetchone()
-        conn.close()
-        return ImobiliariaDTO(*r) if r else None
+    def find(self) -> List[ImobiliariaEntity]:
+        """Retorna todas as imobiliárias cadastradas."""
+        with self._get_connection() as conn:
+            cursor = conn.execute("SELECT * FROM imobiliarias")
+            rows = cursor.fetchall()
+            return [self._row_to_entity(row) for row in rows]
 
-    def delete(self, id: int):
-        conn = self._conn()
-        cur = conn.cursor()
-        cur.execute("DELETE FROM imobiliarias WHERE id = ?", (id,))
-        conn.commit()
-        conn.close()
+    def find_by_id(self, imobiliaria_id: int) -> Optional[ImobiliariaEntity]:
+        """Busca uma imobiliária pelo ID."""
+        with self._get_connection() as conn:
+            cursor = conn.execute("SELECT * FROM imobiliarias WHERE id = ?", (imobiliaria_id,))
+            row = cursor.fetchone()
+            if row:
+                return self._row_to_entity(row)
+            return None
+
+    def delete(self, imobiliaria_id: int) -> bool:
+        """Remove uma imobiliária pelo ID."""
+        with self._get_connection() as conn:
+            cursor = conn.execute("DELETE FROM imobiliarias WHERE id = ?", (imobiliaria_id,))
+            return cursor.rowcount > 0

@@ -46,3 +46,9 @@ Thumbs.db
 .cache/
 dist/
 build/
+
+# -----------------------------
+# ERROS DE INGESTÃO E IDE
+# -----------------------------
+data/erros/
+.vscode/

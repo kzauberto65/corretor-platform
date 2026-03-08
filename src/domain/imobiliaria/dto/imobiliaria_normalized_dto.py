@@ -1,8 +1,16 @@
+# ============================================================
+# DTO: ImobiliariaNormalizedDTO
+# Camada: domain/imobiliaria/dto/
+# Descrição: DTO normalizado (após validação/normalização)
+# Sprint: 10.5
+# ============================================================
+
 from dataclasses import dataclass
+from typing import Optional
 
 @dataclass
 class ImobiliariaNormalizedDTO:
-    nome: str | None
-    cnpj: str | None
-    contato: str | None
-    observacoes: str | None
+    nome: Optional[str] = None
+    cnpj: Optional[str] = None
+    contato: Optional[str] = None
+    observacoes: Optional[str] = None
